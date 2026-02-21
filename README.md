@@ -23,8 +23,8 @@ Esta seção descreve as principais decisões técnicas adotadas no desenvolvime
 ### Linguagens de Programação
 
 **Linguagens utilizadas:**
-- Cliente(s): ______________________________  
-- Servidor(es): ______________________________  
+- Cliente(s): Java e Python  
+- Servidor(es): Java e Python  
 
 **Justificativa da escolha:**
 
