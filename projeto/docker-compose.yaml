@@ -1,0 +1,26 @@
+services:
+
+  servidor-python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    volumes:
+      - ./python/server.py:/app/main.py
+    ports:
+      - "5555:5555"
+
+  cliente-python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    volumes:
+      - ./python/client.py:/app/main.py
+    depends_on:
+      - servidor-python
+
+  servidor-java:
+    build:
+      context: .
+      dockerfile: Dockerfile.java
+    ports:
+      - "5556:5556"
