@@ -1,0 +1,25 @@
+services:
+
+  broker:
+    build: .
+    container_name: broker
+    command: java -cp .:jeromq-0.5.3.jar Broker
+    ports:
+      - "5555:5555"
+      - "5556:5556"
+
+  servidor:
+    build: .
+    command: java -cp .:jeromq-0.5.3.jar Servidor
+    depends_on:
+      - broker
+    deploy:
+      replicas: 2
+
+  cliente:
+    build: .
+    command: java -cp .:jeromq-0.5.3.jar Cliente
+    depends_on:
+      - broker
+    deploy:
+      replicas: 3
