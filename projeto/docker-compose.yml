@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: cc7261:pyzmq
-    container_name: broker
+    container_name: broker_py
     volumes:
       - ./broker.py:/app/main.py
     ports:
