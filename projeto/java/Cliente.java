@@ -1,7 +1,15 @@
 import org.zeromq.ZMQ;
 import java.util.Random;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Cliente {
+
+    public static void log(String service, String msg) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String now = LocalDateTime.now().format(formatter);
+        System.out.println("[" + now + "] [" + service + "] " + msg);
+    }
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -13,36 +21,36 @@ public class Cliente {
         String[] acoes = {"adiciona", "lista"};
         Random random = new Random();
 
-        try {
-            while (true) {
-                String user = "user_" + (random.nextInt(99) + 1);
-                socket.send("logar " + user);
+        Thread.sleep(2000);
 
-                String respostaLogin = socket.recvStr();
+        while (true) {
+            String user = "user_" + (random.nextInt(99) + 1);
 
-                if (respostaLogin.equals("usuario logado")) {
+            log("CLIENTE", "Tentando logar: " + user);
+            socket.send("logar " + user);
 
-                    String acao = acoes[random.nextInt(acoes.length)];
-                    String canal = "canal_" + (random.nextInt(999) + 1);
+            String respostaLogin = socket.recvStr();
+            log("CLIENTE", "Resposta login: " + respostaLogin);
 
-                    String mensagem = acao + " " + canal;
+            if (respostaLogin.equals("usuario logado")) {
 
-                    socket.send(mensagem);
-                    String resposta = socket.recvStr();
+                String acao = acoes[random.nextInt(acoes.length)];
+                String canal = "canal_" + (random.nextInt(999) + 1);
+                String mensagem = acao + " " + canal;
 
-                    System.out.println(resposta);
+                log("CLIENTE", "Enviando comando: " + mensagem);
 
-                    Thread.sleep(500);
+                socket.send(mensagem);
+                String resposta = socket.recvStr();
 
-                } else {
-                    System.out.println("falha no login, usuario ja logado");
-                    Thread.sleep(500);
-                }
+                log("CLIENTE", "Resposta servidor:\n" + resposta);
+
+                Thread.sleep(500);
+
+            } else {
+                log("CLIENTE", "falha no login");
+                Thread.sleep(500);
             }
-
-        } finally {
-            socket.close();
-            context.close();
         }
     }
 }
