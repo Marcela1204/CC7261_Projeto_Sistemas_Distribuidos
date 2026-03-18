@@ -11,7 +11,6 @@ public class Broker {
         ZMQ.Socket backend = context.socket(ZMQ.DEALER);
         backend.bind("tcp://*:5556");
 
-        // 🔥 ESSA LINHA RESOLVE TUDO
         ZMQ.proxy(frontend, backend, null);
 
         frontend.close();
