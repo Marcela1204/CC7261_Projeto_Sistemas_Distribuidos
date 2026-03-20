@@ -8,7 +8,7 @@ def log(service, msg):
 canais = []
 users = []
 
-can = open("canais.txt","w")
+can = open("canais.txt","r+")
 canais.append(can.readlines())
 
 context = zmq.Context()
