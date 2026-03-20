@@ -8,6 +8,9 @@ def log(service, msg):
 canais = []
 users = []
 
+can = open("canais.txt","w")
+canais.append(can.readlines())
+
 context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.connect("tcp://broker:5556")
@@ -49,3 +52,4 @@ while True:
         response = listar()
 
     socket.send_string(response)
+    can.write(listar())

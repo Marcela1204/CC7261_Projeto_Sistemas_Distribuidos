@@ -19,6 +19,7 @@ services:
     image: cc7261:pyzmq
     volumes:
       - ./servidor.py:/app/main.py
+      - ./canais.txt:/app/canais.txt
     depends_on:
       - broker
     deploy:
