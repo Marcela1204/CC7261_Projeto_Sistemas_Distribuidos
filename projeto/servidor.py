@@ -21,12 +21,13 @@ socketChan.connect("tcp://broker:4446")
 canais = []
 users = []
 
-can = open("canais.txt","r+")
-canais.append(can.readlines())
+# can = open("canais.txt","r+")
+# canais.append(can.readlines())
 
 
 def create(canal):
     canais.append(canal)
+    # can.write(canais)
     return "tarefa adicionada\n" + listar()
 def createlogin(user):
     if user in users:
