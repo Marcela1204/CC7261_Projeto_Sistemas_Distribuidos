@@ -9,8 +9,8 @@ services:
     volumes:
       - ./broker.py:/app/main.py
     ports:
-      - 5555:5555
-      - 5556:5556
+      - 4445:4445
+      - 4446:4446
 
   proxy:
     build:

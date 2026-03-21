@@ -11,7 +11,7 @@ socket.connect("tcp://broker:5556")
 #NOTE: seção do publisher 
 context = zmq.Context()
 pub = context.socket(zmq.PUB)
-pub.connect("tcp://proxy:6665")
+pub.connect("tcp://proxy:6666")
 
 #NOTE: Seção do canal
 context = zmq.Context()

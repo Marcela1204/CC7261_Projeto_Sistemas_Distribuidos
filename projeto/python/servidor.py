@@ -2,6 +2,8 @@ from time import sleep
 import zmq
 from datetime import datetime
 
+canais = []
+
 def log(service, msg):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{now}] [{service}] {msg}")
