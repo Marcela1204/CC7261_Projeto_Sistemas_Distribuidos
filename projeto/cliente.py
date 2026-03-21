@@ -2,23 +2,21 @@ import zmq
 from time import sleep
 import random
 
-#NOTE: seção do requester
 context = zmq.Context()
+#NOTE: seção do requester
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://broker:5555")
 print("request iniciado")
 
 #NOTE: seção do subscriber
-context = zmq.Context()
 sub = context.socket(zmq.SUB)
 sub.setsockopt_string(zmq.SUBSCRIBE, "canal")
 sub.connect("tcp://proxy:6665")
 print("subscriber iniciado")
 
 #NOTE: seção criador de canais
-context = zmq.Context()
 socketChan = context.socket(zmq.REQ)
-socketChan.connect("tcp://broker:4445")
+socketChan.connect("tcp://broker2:4445")
 print("canais iniciado")
 
 

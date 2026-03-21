@@ -16,7 +16,7 @@ pub.connect("tcp://proxy:6666")
 #NOTE: Seção do canal
 context = zmq.Context()
 socketChan = context.socket(zmq.REP)
-socketChan.connect("tcp://broker:4446")
+socketChan.connect("tcp://broker2:4446")
 
 canais = []
 users = []
