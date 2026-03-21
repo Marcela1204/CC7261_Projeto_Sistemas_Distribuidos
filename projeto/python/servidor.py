@@ -2,8 +2,14 @@ from time import sleep
 import zmq
 from datetime import datetime
 
+def log(service, msg):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{now}] [{service}] {msg}")
 
-#NOTE: seção do reply
+
+can = open("canais.txt","r+")
+canais.append(can.readlines())
+
 context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.connect("tcp://broker:5556")
