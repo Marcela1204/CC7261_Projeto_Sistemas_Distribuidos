@@ -8,11 +8,20 @@ services:
       - "5555:5555"
       - "5556:5556"
 
+  proxy:
+    build: .
+    container_name: proxy
+    command: java -cp .:jeromq-0.5.3.jar Proxy
+    ports:
+      - "5557:5557"
+      - "5558:5558"
+
   servidor:
     build: .
     command: java -cp .:jeromq-0.5.3.jar Servidor
     depends_on:
       - broker
+      - proxy
     deploy:
       replicas: 2
 
@@ -20,6 +29,6 @@ services:
     build: .
     command: java -cp .:jeromq-0.5.3.jar Cliente
     depends_on:
-      - broker
+      - servidor
     deploy:
       replicas: 3

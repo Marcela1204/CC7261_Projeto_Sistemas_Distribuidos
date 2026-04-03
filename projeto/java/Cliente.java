@@ -1,55 +1,102 @@
 import org.zeromq.ZMQ;
-import java.util.Random;
+import java.util.*;
+
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class Cliente {
 
     public static void log(String service, String msg) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String now = LocalDateTime.now().format(formatter);
-        System.out.println("[" + now + "] [" + service + "] " + msg);
+        System.out.println("[" + LocalDateTime.now() + "] [" + service + "] " + msg);
     }
 
     public static void main(String[] args) throws InterruptedException {
 
         ZMQ.Context context = ZMQ.context(1);
-        ZMQ.Socket socket = context.socket(ZMQ.REQ);
 
-        socket.connect("tcp://broker:5555");
+        ZMQ.Socket req = context.socket(ZMQ.REQ);
+        req.connect("tcp://broker:5555");
 
-        String[] acoes = {"adiciona", "lista"};
+        ZMQ.Socket sub = context.socket(ZMQ.SUB);
+        sub.connect("tcp://proxy:5558");
+
+        ZMQ.Poller poller = context.poller(1);
+        poller.register(sub, ZMQ.Poller.POLLIN);
+
         Random random = new Random();
+        Set<String> inscritos = new HashSet<>();
 
         Thread.sleep(2000);
 
         while (true) {
-            String user = "user_" + (random.nextInt(99) + 1);
 
-            log("CLIENTE", "Tentando logar: " + user);
-            socket.send("logar " + user);
+            String user = "user_" + random.nextInt(100);
+            req.send("logar " + user);
+            String login = req.recvStr();
 
-            String respostaLogin = socket.recvStr();
-            log("CLIENTE", "Resposta login: " + respostaLogin);
+            if (!login.equals("usuario logado")) continue;
 
-            if (respostaLogin.equals("usuario logado")) {
+            // LISTAR CANAIS
+            req.send("lista");
+            String resposta = req.recvStr();
 
-                String acao = acoes[random.nextInt(acoes.length)];
-                String canal = "canal_" + (random.nextInt(999) + 1);
-                String mensagem = acao + " " + canal;
+            List<String> canais = new ArrayList<>();
+            if (!resposta.equals("nenhum canal")) {
+                canais = Arrays.asList(resposta.split("\n"));
+            }
 
-                log("CLIENTE", "Enviando comando: " + mensagem);
+            // CRIAR CANAL SE < 5
+            if (canais.size() < 5) {
+                String novo = "canal_" + random.nextInt(999);
+                req.send("adiciona " + novo);
+                req.recvStr();
+                canais.add(novo);
+            }
 
-                socket.send(mensagem);
-                String resposta = socket.recvStr();
+            // INSCREVER ATÉ 3
+            if (inscritos.size() < 3 && !canais.isEmpty()) {
+                String canal = canais.get(random.nextInt(canais.size()));
+                if (!inscritos.contains(canal)) {
+                    sub.subscribe(canal.getBytes(ZMQ.CHARSET));
+                    inscritos.add(canal);
+                    log("CLIENTE", "Inscrito em " + canal);
+                }
+            }
 
-                log("CLIENTE", "Resposta servidor:\n" + resposta);
+            // LOOP DE ENVIO
+            for (int i = 0; i < 10; i++) {
 
-                Thread.sleep(500);
+                if (canais.isEmpty()) break;
 
-            } else {
-                log("CLIENTE", "falha no login");
-                Thread.sleep(500);
+                String canal = canais.get(random.nextInt(canais.size()));
+                String mensagem = "msg_" + random.nextInt(999);
+
+                req.send("publica " + canal + " " + mensagem);
+                req.recvStr();
+
+                // RECEBER
+                if (poller.poll(100) > 0) {
+                    if (poller.pollin(0)) {
+
+                        String msg = sub.recvStr();
+
+                        String[] parts = msg.split(" ", 3);
+
+                        String canalMsg = parts[0];
+                        String envio = parts[1];
+                        String conteudo = parts[2];
+
+                        String recebimento = LocalDateTime.now().toString();
+
+                        log("SUB",
+                                "Canal: " + canalMsg +
+                                " | Enviado: " + envio +
+                                " | Recebido: " + recebimento +
+                                " | Msg: " + conteudo
+                        );
+                    }
+                }
+
+                Thread.sleep(1000);
             }
         }
     }
