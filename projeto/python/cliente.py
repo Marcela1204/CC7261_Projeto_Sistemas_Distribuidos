@@ -3,43 +3,76 @@ from time import sleep
 import random
 from datetime import datetime
 
-def log(service, msg):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{now}] [{service}] {msg}")
-
 context = zmq.Context()
+
+#NOTE: seção do requester para mensagens
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://broker:5555")
+print("request iniciado")
+
+#NOTE: seção do subscriber
+sub = context.socket(zmq.SUB)
+sub.setsockopt_string(zmq.SUBSCRIBE, "canal")
+sub.connect("tcp://proxy:6665")
+print("subscriber iniciado")
+
+#NOTE: seção criador de canais
+socketChan = context.socket(zmq.REQ)
+socketChan.connect("tcp://broker2:4445")
+print("canais iniciado")
 
 acoes = ["adiciona", "lista"]
 
+# Poller para subscriber (não bloqueante)
+poller = zmq.Poller()
+poller.register(sub, zmq.POLLIN)
+def printdata():
+    return datetime.now().strftime("%d-%m-%y %H:%M:%S")
+
 try:
     while True:
-        user = f"user_{random.randint(1,99)}"
-        log("CLIENTE", f"Tentando logar: {user}")
-
-        socket.send_string(f"logar {user}")
-        resposta_login = socket.recv_string()
-
-        log("CLIENTE", f"Resposta login: {resposta_login}")
+        # Tenta logar com usuário aleatório
+        socketChan.send_string(f"logar user_{random.randint(1,99)}")
+        resposta_login = socketChan.recv_string()
 
         if resposta_login == "usuario logado":
-            oqfazer = f"{random.choice(acoes)} canal_{random.randint(1,999)}"
-            
-            log("CLIENTE", f"Enviando comando: {oqfazer}")
+            print(f"{printdata()} ✓ {resposta_login}")
 
-            socket.send_string(oqfazer)
-            resposta = socket.recv_string()
+            # Escolhe ação aleatória
+            acao = random.choice(acoes)
+            if acao == "adiciona":
+                canal = f"canal_{random.randint(1,999)}"
+                socketChan.send_string(f"adiciona {canal}")
+                resposta = socketChan.recv_string()
+                print(f"{printdata()} ✓ {resposta}")
+            # else:  # lista
+                # socketChan.send_string("lista")
+                # resposta = socketChan.recv_string()
+                # print(f"✓ Canais: {resposta}")
 
-            log("CLIENTE", f"Resposta servidor:\n{resposta}")
+            # Envia mensagem para publicar
+            mensagem = f"mensagem_{random.randint(1,999)}"
+            socket.send_string(mensagem)
+            resposta_pub = socket.recv_string()
+            print(f"{printdata()} ✓ {resposta_pub}")
+
+            # Verifica se há mensagens do subscriber (não bloqueante)
+            eventos = dict(poller.poll(timeout=100))  # 100ms timeout
+            if sub in eventos:
+                mensagens = sub.recv_string()
+                print(f"{printdata()} 📨 Recebido: {mensagens}")
 
             sleep(0.5)
         else:
-            log("CLIENTE", "falha no login, usuario ja logado")
+            print(f"{printdata()} ✗ {resposta_login}")
             sleep(0.5)
 
 except KeyboardInterrupt:
-    pass
+    print("\nCliente interrompido")
 finally:
     socket.close()
+    sub.close()
+    socketChan.close()
     context.term()
+
+

@@ -5,9 +5,21 @@ services:
       context: .
       dockerfile: Dockerfile
     image: cc7261:pyzmq
-    container_name: broker_py
+    container_name: broker
     volumes:
       - ./broker.py:/app/main.py
+    ports:
+      - 5555:5555
+      - 5556:5556
+
+  broker2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    container_name: broker2
+    volumes:
+      - ./broker2.py:/app/main.py
     ports:
       - 4445:4445
       - 4446:4446
@@ -34,9 +46,10 @@ services:
       - ./canais.txt:/app/canais.txt
     depends_on:
       - broker
+      - broker2
       - proxy
     deploy:
-      replicas: 2
+      replicas: 1
 
   cliente:
     build:
@@ -48,4 +61,4 @@ services:
     depends_on:
       - servidor
     deploy:
-      replicas: 3
+      replicas: 1
