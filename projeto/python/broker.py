@@ -12,3 +12,4 @@ print("Broker iniciado...")
 
 # 🔥 proxy automático
 zmq.proxy(client_socket, server_socket)
+
