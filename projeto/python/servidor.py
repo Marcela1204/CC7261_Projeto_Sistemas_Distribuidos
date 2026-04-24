@@ -12,6 +12,11 @@ msg_socket.connect("tcp://broker:5556")
 cmd_socket = context.socket(zmq.REP)
 cmd_socket.connect("tcp://broker2:4446")
 
+#NOTE: seção do requester para heartbeat
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://heartbeat:7777")
+print("request iniciado")
+
 # PUB via proxy para broadcast
 pub = context.socket(zmq.PUB)
 pub.connect("tcp://proxy:6666")
@@ -20,7 +25,10 @@ canais = []
 users = []
 
 def printdata():
-    return datetime.now().strftime("%d-%m-%y %H:%M:%S")
+    socket.send_string("alive")
+    data = socket.recv_string()
+    return data
+    # return datetime.now().strftime("%d-%m-%y %H:%M:%S")
 
 def create_canal(canal):
     if canal in canais:

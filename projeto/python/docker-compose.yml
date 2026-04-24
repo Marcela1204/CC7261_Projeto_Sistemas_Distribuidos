@@ -36,6 +36,17 @@ services:
       - 6665:6665
       - 6666:6666
 
+  hearbeat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    container_name: hearbeat
+    volumes:
+      - ./heartbeat.py.py:/app/main.py
+    ports:
+      - 7777:7777
+
   servidor:
     build:
       context: .
