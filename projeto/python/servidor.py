@@ -12,15 +12,22 @@ msg_socket.connect("tcp://broker:5556")
 cmd_socket = context.socket(zmq.REP)
 cmd_socket.connect("tcp://broker2:4446")
 
+# SUB para heartbeat
+sub = context.socket(zmq.SUB)
+sub.connect("tcp://heartbeat:7777")
+sub.setsockopt_string(zmq.SUBSCRIBE, "")
+
 # PUB via proxy para broadcast
 pub = context.socket(zmq.PUB)
 pub.connect("tcp://proxy:6666")
 
 canais = []
 users = []
+current_time = datetime.now().strftime("%d-%m-%y %H:%M:%S")
 
 def printdata():
-    return datetime.now().strftime("%d-%m-%y %H:%M:%S")
+    return current_time
+    # return datetime.now().strftime("%d-%m-%y %H:%M:%S")
 
 def create_canal(canal):
     if canal in canais:
@@ -55,11 +62,15 @@ def broadcast(mensagem):
 poller = zmq.Poller()
 poller.register(cmd_socket, zmq.POLLIN)
 poller.register(msg_socket, zmq.POLLIN)
+poller.register(sub, zmq.POLLIN)
 
-print("Servidor iniciado (REP cmd+msg, PUB proxy)...")
+print("Servidor iniciado (REP cmd+msg, PUB proxy, SUB heartbeat)...")
 
 while True:
     eventos = dict(poller.poll())
+
+    if sub in eventos:
+        current_time = sub.recv_string()
 
     if cmd_socket in eventos:
         message = cmd_socket.recv_string()
