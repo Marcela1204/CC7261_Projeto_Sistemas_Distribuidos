@@ -1,9 +1,10 @@
 import org.zeromq.ZMQ;
 import java.util.*;
-
 import java.time.LocalDateTime;
 
 public class Cliente {
+
+    private static LogicalClock clock = new LogicalClock();
 
     public static void log(String service, String msg) {
         System.out.println("[" + LocalDateTime.now() + "] [" + service + "] " + msg);
@@ -30,31 +31,54 @@ public class Cliente {
         while (true) {
 
             String user = "user_" + random.nextInt(100);
-            req.send("logar " + user);
-            String login = req.recvStr();
+
+            // LOGIN
+            req.send(clock.increment() + "|" + "logar " + user);
+
+            String respLogin = req.recvStr();
+            String[] pLogin = respLogin.split("\\|", 2);
+
+            clock.update(Integer.parseInt(pLogin[0]));
+            String login = pLogin[1];
 
             if (!login.equals("usuario logado")) continue;
 
             // LISTAR CANAIS
-            req.send("lista");
-            String resposta = req.recvStr();
+            req.send(clock.increment() + "|" + "lista");
+            String respLista = req.recvStr();
 
+            String[] pLista = respLista.split("\\|", 2);
+            clock.update(Integer.parseInt(pLista[0]));
+            String resposta = pLista[1];
+
+            // ✅ LISTA ROBUSTA (SEM Arrays.asList direto)
             List<String> canais = new ArrayList<>();
-            if (!resposta.equals("nenhum canal")) {
-                canais = Arrays.asList(resposta.split("\n"));
+
+            if (resposta != null && !resposta.equals("nenhum canal") && !resposta.trim().isEmpty()) {
+                String[] lista = resposta.split("\n");
+
+                for (String c : lista) {
+                    if (!c.trim().isEmpty()) {
+                        canais.add(c);
+                    }
+                }
             }
 
-            // CRIAR CANAL SE < 5
+            // CRIAR CANAL SE NECESSÁRIO
             if (canais.size() < 5) {
                 String novo = "canal_" + random.nextInt(999);
-                req.send("adiciona " + novo);
+
+                req.send(clock.increment() + "|" + "adiciona " + novo);
                 req.recvStr();
+
+                // adiciona localmente
                 canais.add(novo);
             }
 
-            // INSCREVER ATÉ 3
+            // INSCREVER EM CANAIS
             if (inscritos.size() < 3 && !canais.isEmpty()) {
                 String canal = canais.get(random.nextInt(canais.size()));
+
                 if (!inscritos.contains(canal)) {
                     sub.subscribe(canal.getBytes(ZMQ.CHARSET));
                     inscritos.add(canal);
@@ -62,7 +86,7 @@ public class Cliente {
                 }
             }
 
-            // LOOP DE ENVIO
+            // LOOP DE PUBLICAÇÃO
             for (int i = 0; i < 10; i++) {
 
                 if (canais.isEmpty()) break;
@@ -70,30 +94,21 @@ public class Cliente {
                 String canal = canais.get(random.nextInt(canais.size()));
                 String mensagem = "msg_" + random.nextInt(999);
 
-                req.send("publica " + canal + " " + mensagem);
+                // PUBLICAR
+                req.send(clock.increment() + "|" + "publica " + canal + " " + mensagem);
                 req.recvStr();
 
-                // RECEBER
-                if (poller.poll(100) > 0) {
-                    if (poller.pollin(0)) {
+                // RECEBER SUB
+                if (poller.poll(100) > 0 && poller.pollin(0)) {
 
-                        String msg = sub.recvStr();
+                    String msg = sub.recvStr();
 
-                        String[] parts = msg.split(" ", 3);
+                    String[] partsClock = msg.split("\\|", 2);
+                    clock.update(Integer.parseInt(partsClock[0]));
 
-                        String canalMsg = parts[0];
-                        String envio = parts[1];
-                        String conteudo = parts[2];
+                    String payload = partsClock[1];
 
-                        String recebimento = LocalDateTime.now().toString();
-
-                        log("SUB",
-                                "Canal: " + canalMsg +
-                                " | Enviado: " + envio +
-                                " | Recebido: " + recebimento +
-                                " | Msg: " + conteudo
-                        );
-                    }
+                    log("SUB", payload);
                 }
 
                 Thread.sleep(1000);

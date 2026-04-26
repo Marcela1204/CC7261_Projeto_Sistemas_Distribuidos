@@ -15,89 +15,22 @@ A comunicação entre os serviços é feita utilizando **ZeroMQ**, garantindo ef
 
 # 🚀 Funcionalidades
 
-## 🔹 Parte 1 – Req/Rep
-
-### 🔐 Login de Usuário
-
-* Cliente envia nome de usuário
-* Servidor valida e responde:
-
-  * sucesso ✅
-  * erro ❌
-
-### 📂 Criação de Canais
-
-* Clientes criam canais
-* Servidor valida duplicidade
-
-### 📋 Listagem de Canais
-
-* Retorno de todos os canais cadastrados
-
-### 💾 Persistência
-
-* Logins
-* Canais criados
-
-## 🔹 Parte 2 – Pub/Sub
-
-### 📡 Publicação em Canais
-
-* Cliente solicita publicação ao servidor
-* Servidor publica no canal correspondente
-
-### 📥 Inscrição em Canais
-
-* Clientes se inscrevem em múltiplos canais
-* Recebem mensagens automaticamente
-
-### ⏱️ Controle de Tempo
-
-Cada mensagem contém:
-
-* Timestamp de envio (servidor)
-* Timestamp de recebimento (cliente)
-
-### 💾 Persistência Avançada
-
-* Publicações armazenadas em disco
-* Requisições registradas (log completo)
+- [Parte 1](documentacao/parte1.md)
+- [Parte 2](documentacao/parte2.md)
+- [Parte 3](documentacao/parte3.md)
+- [Parte 4](documentacao/parte4.md)
+- [Parte 5](documentacao/parte5.md)
 
 ---
 
 # 🧠 Arquitetura
 
 O sistema foi dividido em dois modelos de comunicação independentes:
-
-## 🔁 Req/Rep (Parte 1)
-
-```mermaid
-graph LR
-Cliente --> Broker
-Broker --> Servidor
-```
-
-* Cliente: REQ
-* Servidor: REP
-* Broker: ROUTER/DEALER
-
-✔ Permite escalabilidade
-✔ Balanceamento de carga
-✔ Desacoplamento
-
----
-
-## 📡 Pub/Sub (Parte 2)
-
-```mermaid
-graph LR
-Servidor --> Proxy
-Proxy --> Cliente
-```
-
-* Servidor: PUB
-* Cliente: SUB
-* Proxy: XSUB/XPUB
+- [Parte 1](documentacao/parte1.md)
+- [Parte 2](documentacao/parte2.md)
+- [Parte 3](documentacao/parte3.md)
+- [Parte 4](documentacao/parte4.md)
+- [Parte 5](documentacao/parte5.md)
 
 ---
 
@@ -136,23 +69,62 @@ sequenceDiagram
   Servidor ->> Cliente: REP (OK/erro)
 ```
 
+## Registro de servidor (Parte 3)
+
+```mermaid
+sequenceDiagram
+  Servidor ->> Referência: REGISTER nome
+  Referência ->> Servidor: RANK id
+```
+
+---
+
+## Listagem de servidores (Parte 3)
+
+```mermaid
+sequenceDiagram
+  Servidor ->> Referência: LIST
+  Referência ->> Servidor: nome:rank,...
+```
+
+---
+
+## Heartbeat (Parte 3)
+
+```mermaid
+sequenceDiagram
+  Servidor ->> Referência: HEARTBEAT nome
+  Referência ->> Servidor: OK timestamp
+```
+
 ---
 
 # 🧾 Formato das Mensagens
 
-## Req/Rep (comandos)
+### Req/Rep
 
 ```text
-logar usuario
-adiciona canal
-lista
-publica canal mensagem
+<clock>|comando
 ```
 
-## Pub/Sub (eventos)
+Exemplo:
 
 ```text
-canal timestamp mensagem
+5|logar user_1
+```
+
+---
+
+### Pub/Sub
+
+```text
+<clock>|canal timestamp mensagem
+```
+
+Exemplo:
+
+```text
+8|canal_1 2026-04-26T17:40:11 msg_123
 ```
 
 ---
