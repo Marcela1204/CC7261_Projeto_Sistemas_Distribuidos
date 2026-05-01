@@ -13,7 +13,7 @@ A comunicação entre os serviços é feita utilizando **ZeroMQ**, garantindo ef
 
 ---
 
-# 🚀 Funcionalidades
+## 🚀 Funcionalidades
 
 - [Parte 1](documentacao/parte1.md)
 - [Parte 2](documentacao/parte2.md)
@@ -23,12 +23,12 @@ A comunicação entre os serviços é feita utilizando **ZeroMQ**, garantindo ef
 
 ---
 
-# 🔄 Fluxos de Comunicação
+## 🔄 Fluxos de Comunicação
 - [Comunicação](documentacao/comunicacao.md)
 
 ---
 
-# 🤖 Comportamento dos Bots
+## 🤖 Comportamento dos Bots
 
 Os clientes foram implementados como bots automáticos:
 
@@ -47,23 +47,23 @@ Os clientes foram implementados como bots automáticos:
 
 ---
 
-# 💾 Armazenamento de Dados
+## 💾 Armazenamento de Dados
 
 O servidor realiza persistência em arquivos locais:
 
-## 📌 Publicações
+### 📌 Publicações
 
 ```text
 canal;mensagem;timestamp
 ```
 
-## 📌 Requisições
+### 📌 Requisições
 
 ```text
 REQ;conteudo;timestamp
 ```
 
-### 🎯 Justificativa
+#### 🎯 Justificativa
 
 * Garantir histórico completo
 * Permitir auditoria
@@ -71,37 +71,37 @@ REQ;conteudo;timestamp
 
 ---
 
-# ⚙️ Escolhas de Projeto
+## ⚙️ Escolhas de Projeto
 
-### ✔ Uso de Broker (ROUTER/DEALER)
+#### ✔ Uso de Broker (ROUTER/DEALER)
 
 * Permite múltiplos servidores
 * Balanceamento automático
 
-### ✔ Proxy Pub/Sub separado
+#### ✔ Proxy Pub/Sub separado
 
 * Isola responsabilidades
 * Evita mistura de padrões
 
-### ✔ Uso de tópicos como canais
+#### ✔ Uso de tópicos como canais
 
 * Aproveita nativamente o ZeroMQ
 * Filtragem eficiente no cliente
 
-### ✔ Servidor como intermediador
+#### ✔ Servidor como intermediador
 
 * Centraliza validação
 * Garante consistência
 * Permite persistência
 
-### ✔ Interoperabilidade Java + Python
+#### ✔ Interoperabilidade Java + Python
 
 * Demonstra compatibilidade entre linguagens
 * Facilita testes e prototipação
 
 ---
 
-# 🛠️ Tecnologias e Linguagens Utilizadas
+## 🛠️ Tecnologias e Linguagens Utilizadas
 
 * ZeroMQ (JeroMQ):	Comunicação assíncrona e leve
 * Python e Java: 	Linguagem principal
@@ -110,7 +110,7 @@ REQ;conteudo;timestamp
 
 ---
 
-# ▶️ Como Executar
+## ▶️ Como Executar
 
 Na pasta do projeto:
 
