@@ -66,10 +66,7 @@ public class ReferenceServer {
 
                 String nome = parts[1];
                 heartbeat.put(nome, System.currentTimeMillis());
-
-                long now = System.currentTimeMillis();
-
-                rep.send("OK " + now);
+                rep.send("OK");
             }
         }
     }

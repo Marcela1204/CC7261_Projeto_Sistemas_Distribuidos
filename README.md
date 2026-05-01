@@ -23,109 +23,8 @@ A comunicação entre os serviços é feita utilizando **ZeroMQ**, garantindo ef
 
 ---
 
-# 🧠 Arquitetura
-
-O sistema foi dividido em dois modelos de comunicação independentes:
-- [Parte 1](documentacao/parte1.md)
-- [Parte 2](documentacao/parte2.md)
-- [Parte 3](documentacao/parte3.md)
-- [Parte 4](documentacao/parte4.md)
-- [Parte 5](documentacao/parte5.md)
-
----
-
 # 🔄 Fluxos de Comunicação
-
-## Login
-
-```mermaid
-sequenceDiagram
-  Cliente ->> Servidor: REQ (logar usuario)
-  Servidor ->> Cliente: REP (sucesso/erro)
-```
-
-## Criar canal
-
-```mermaid
-sequenceDiagram
-  Cliente ->> Servidor: REQ (adiciona canal)
-  Servidor ->> Cliente: REP (resultado)
-```
-
-## Listar canais
-
-```mermaid
-sequenceDiagram
-  Cliente ->> Servidor: REQ (lista)
-  Servidor ->> Cliente: REP (canais)
-```
-
-## Publicação (Parte 2)
-
-```mermaid
-sequenceDiagram
-  Cliente ->> Servidor: REQ (publica canal mensagem)
-  Servidor ->> Proxy: PUB (mensagem)
-  Servidor ->> Cliente: REP (OK/erro)
-```
-
-## Registro de servidor (Parte 3)
-
-```mermaid
-sequenceDiagram
-  Servidor ->> Referência: REGISTER nome
-  Referência ->> Servidor: RANK id
-```
-
----
-
-## Listagem de servidores (Parte 3)
-
-```mermaid
-sequenceDiagram
-  Servidor ->> Referência: LIST
-  Referência ->> Servidor: nome:rank,...
-```
-
----
-
-## Heartbeat (Parte 3)
-
-```mermaid
-sequenceDiagram
-  Servidor ->> Referência: HEARTBEAT nome
-  Referência ->> Servidor: OK timestamp
-```
-
----
-
-# 🧾 Formato das Mensagens
-
-### Req/Rep
-
-```text
-<clock>|comando
-```
-
-Exemplo:
-
-```text
-5|logar user_1
-```
-
----
-
-### Pub/Sub
-
-```text
-<clock>|canal timestamp mensagem
-```
-
-Exemplo:
-
-```text
-8|canal_1 2026-04-26T17:40:11 msg_123
-```
+- [Comunicação](documentacao/comunicacao.md)
 
 ---
 
@@ -202,17 +101,12 @@ REQ;conteudo;timestamp
 
 ---
 
-# 🛠️ Tecnologias Utilizadas
+# 🛠️ Tecnologias e Linguagens Utilizadas
 
-* ZeroMQ (JeroMQ / PyZMQ)
-* Docker / Docker Compose
-
----
-
-# 💻 Linguagens Utilizadas
-
-* Java
-* Python
+* ZeroMQ (JeroMQ):	Comunicação assíncrona e leve
+* Python e Java: 	Linguagem principal
+* Docker / Docker Compose:	Containerização e orquestração
+* Mermaid:	Diagramas de sequência
 
 ---
 

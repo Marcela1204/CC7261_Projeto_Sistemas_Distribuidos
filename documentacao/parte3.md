@@ -1,10 +1,9 @@
-# 🧩 Parte 3 — Relógios e Heartbeat
 # Funcionalidades
-## 🧠 Relógio Lógico (Lamport)
+## Relógio Lógico (Lamport)
 
 O relógio lógico foi implementado em **clientes e servidores** para manter a ordem dos eventos no sistema.
 
-### 🔹 Regras implementadas
+### Regras implementadas
 
 * Antes de enviar uma mensagem:
 
@@ -21,7 +20,7 @@ clock = max(clock_local, clock_recebido)
 
 ---
 
-## ⏱️ Sincronização de Relógio Físico
+## Sincronização de Relógio Físico
 
 Foi criado um **serviço de referência** responsável por fornecer o tempo atual para os servidores.
 
@@ -38,11 +37,11 @@ System.currentTimeMillis()
 
 ---
 
-## 🧩 Serviço de Referência
+## Serviço de Referência
 
 Novo componente adicionado ao sistema.
 
-### 🔹 Responsabilidades
+### Responsabilidades
 
 * Atribuir **rank** aos servidores
 * Manter lista de servidores ativos
@@ -52,13 +51,13 @@ Novo componente adicionado ao sistema.
 
 ---
 
-## ❤️ Heartbeat
+## Heartbeat
 
 Cada servidor envia heartbeat periodicamente:
 
 * Frequência: a cada **10 mensagens processadas**
 
-### 🔹 Funções do heartbeat
+### Funções do heartbeat
 
 * Informar que o servidor está ativo
 * Atualizar seu relógio físico
@@ -66,7 +65,7 @@ Cada servidor envia heartbeat periodicamente:
 
 ---
 
-## ⚠️ Detecção de falhas
+## Detecção de falhas
 
 * O serviço de referência remove servidores que:
 
@@ -75,18 +74,4 @@ Cada servidor envia heartbeat periodicamente:
 ✔ Garante lista atualizada de servidores ativos
 ✔ Permite tolerância a falhas
 
----
 
-## Arquitetura
-
-Foi adicionado um novo componente:
-
-* **Reference Server**
-
-Fluxo atualizado:
-
-```text
-Servidor ↔ Reference Server
-Servidor ↔ Broker ↔ Cliente
-Servidor → Proxy → Clientes
-```

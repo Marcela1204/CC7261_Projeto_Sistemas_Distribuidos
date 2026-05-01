@@ -51,7 +51,7 @@ public class Cliente {
             clock.update(Integer.parseInt(pLista[0]));
             String resposta = pLista[1];
 
-            // ✅ LISTA ROBUSTA (SEM Arrays.asList direto)
+            
             List<String> canais = new ArrayList<>();
 
             if (resposta != null && !resposta.equals("nenhum canal") && !resposta.trim().isEmpty()) {

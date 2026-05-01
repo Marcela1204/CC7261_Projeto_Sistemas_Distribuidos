@@ -1,2 +1,1 @@
 # Funcionalidades
-# Arquitetura

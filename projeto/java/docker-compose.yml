@@ -20,20 +20,31 @@ services:
     ports:
       - "6000:6000"
 
-  servidor:
+  servidor-1:
     build: .
+    hostname: servidor-1
+    container_name: servidor-1
     command: java -cp .:jeromq-0.5.3.jar Servidor
     depends_on:
       - broker
       - proxy
       - reference
-    deploy:
-      replicas: 2
+
+  servidor-2:
+    build: .
+    hostname: servidor-2
+    container_name: servidor-2
+    command: java -cp .:jeromq-0.5.3.jar Servidor
+    depends_on:
+      - broker
+      - proxy
+      - reference
 
   cliente:
     build: .
     command: java -cp .:jeromq-0.5.3.jar Cliente
     depends_on:
-      - servidor
+      - servidor-1
+      - servidor-2
     deploy:
       replicas: 3
