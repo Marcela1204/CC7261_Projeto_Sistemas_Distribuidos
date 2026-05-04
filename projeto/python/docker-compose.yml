@@ -1,75 +1,50 @@
 services:
 
   broker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: cc7261:pyzmq
-    container_name: broker
-    volumes:
-      - ./broker.py:/app/main.py
+    build: .
+    command: python Broker.py
     ports:
-      - 5555:5555
-      - 5556:5556
-
-  broker2:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: cc7261:pyzmq
-    container_name: broker2
-    volumes:
-      - ./broker2.py:/app/main.py
-    ports:
-      - 4445:4445
-      - 4446:4446
+      - "5555:5555"
+      - "5556:5556"
 
   proxy:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: cc7261:pyzmq
-    container_name: proxy
-    volumes:
-      - ./proxy.py:/app/main.py
+    build: .
+    command: python Proxy.py
     ports:
-      - 6665:6665
-      - 6666:6666
+      - "5557:5557"
+      - "5558:5558"
 
-  heartbeat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: cc7261:pyzmq
-    container_name: heartbeat
-    volumes:
-      - ./heartbeat.py:/app/main.py
+  reference:
+    build: .
+    command: python ReferenceServer.py
     ports:
-      - 7777:7777
+      - "6000:6000"
 
-  servidor:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: cc7261:pyzmq
-    volumes:
-      - ./servidor.py:/app/main.py
-      - ./canais.txt:/app/canais.txt
+  servidor-1:
+    build: .
+    hostname: servidor-1
+    container_name: servidor-1
+    command: python Servidor.py
     depends_on:
       - broker
-      - broker2
       - proxy
-    deploy:
-      replicas: 1
+      - reference
+
+  servidor-2:
+    build: .
+    hostname: servidor-2
+    container_name: servidor-2
+    command: python Servidor.py
+    depends_on:
+      - broker
+      - proxy
+      - reference
 
   cliente:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: cc7261:pyzmq
-    volumes:
-      - ./cliente.py:/app/main.py
+    build: .
+    command: python Cliente.py
     depends_on:
-      - servidor
+      - servidor-1
+      - servidor-2
     deploy:
-      replicas: 1
+      replicas: 3

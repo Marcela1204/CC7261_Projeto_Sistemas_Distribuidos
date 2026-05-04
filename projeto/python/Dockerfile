@@ -1,7 +1,9 @@
-FROM python:3.13.7-alpine3.21
+FROM python:3.9-slim
 
 WORKDIR /app
 
+COPY . .
+
 RUN pip install pyzmq
 
-CMD ["python", "main.py"]
+CMD ["python", "Broker.py"]
