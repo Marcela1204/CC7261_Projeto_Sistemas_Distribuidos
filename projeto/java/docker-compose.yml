@@ -24,7 +24,7 @@ services:
     build: .
     hostname: servidor-1
     container_name: servidor-1
-    command: java -cp .:jeromq-0.5.3.jar Servidor
+    command: java -cp .:jeromq-0.5.3.jar Servidor_sync
     depends_on:
       - broker
       - proxy
@@ -34,7 +34,7 @@ services:
     build: .
     hostname: servidor-2
     container_name: servidor-2
-    command: java -cp .:jeromq-0.5.3.jar Servidor
+    command: java -cp .:jeromq-0.5.3.jar Servidor_sync
     depends_on:
       - broker
       - proxy

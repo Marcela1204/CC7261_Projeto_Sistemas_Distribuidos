@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.io.*;
 import java.nio.file.*;
 
-public class Servidor {
+public class Servidor_sync {
 
     private static List<String> canais = new ArrayList<>();
     private static List<String> users = new ArrayList<>();
@@ -15,7 +15,7 @@ public class Servidor {
     private static String coordenador = null;
     private static int mensagensDesdeSync = 0;
     private static final int SYNC_INTERVAL = 15;
-    
+
     private static final List<String> ALL_SERVERS = Arrays.asList(
         "servidor-1", "servidor-2"
     );
@@ -103,14 +103,14 @@ public class Servidor {
     }
 
     public static void main(String[] args) throws Exception {
-        
+
         String hostname = System.getenv("HOSTNAME");
         if (hostname != null && (hostname.startsWith("servidor-") || hostname.startsWith("servidor_"))) {
             serverName = hostname;
         } else {
             serverName = "servidor-" + UUID.randomUUID().toString().substring(0, 8);
         }
-        
+
         log("Iniciando servidor...");
 
         ZMQ.Context context = ZMQ.context(1);
@@ -139,18 +139,15 @@ public class Servidor {
 
         Thread.sleep(5000);
 
-        // ELEIÇÃO
         List<String> ordenados = new ArrayList<>(ALL_SERVERS);
         Collections.sort(ordenados);
         coordenador = ordenados.get(0);
         final boolean souCoord = coordenador.equals(serverName);
-        
-        //log("==========================================");
+
         log("SERVIDORES: " + ALL_SERVERS);
         log("COORDENADOR ELEITO: " + coordenador);
         log("EU SOU COORDENADOR? " + souCoord);
-        //log("==========================================");
-        
+
         pub.send(relogioLogico.increment() + "|servers " + coordenador);
 
         final ZMQ.Socket coordSocket;
@@ -164,7 +161,7 @@ public class Servidor {
 
         final ZMQ.Socket eleicaoSocket = context.socket(ZMQ.REP);
         eleicaoSocket.bind("tcp://*:5999");
-        
+
         new Thread(() -> {
             while (true) {
                 String msg = eleicaoSocket.recvStr();
@@ -194,13 +191,13 @@ public class Servidor {
             String[] partesClock = mensagem.split("\\|", 2);
             int clockRecebido = Integer.parseInt(partesClock[0]);
             String comando = partesClock[1];
-            
+
             relogioLogico.update(clockRecebido);
-            
+
             String[] tokens = comando.split(" ", 3);
             String cmd = tokens[0];
             String resposta = "";
-            
+
             if (cmd.equals("logar")) {
                 resposta = "usuario logado";
             } else if (cmd.equals("adiciona")) {
@@ -227,11 +224,11 @@ public class Servidor {
                 log("Publicado em " + canal + ": " + msg);
                 resposta = "OK";
             }
-            
+
             rep.send(relogioLogico.increment() + "|" + resposta);
-            
+
             mensagensDesdeSync++;
-            
+
             if (mensagensDesdeSync % 10 == 0) {
                 try {
                     ref.send("HEARTBEAT " + serverName);
@@ -242,49 +239,57 @@ public class Servidor {
                 }
                 log("Coordenador atual: " + coordenador);
             }
-            
-            if (mensagensDesdeSync % SYNC_INTERVAL == 0) {
-                log("INICIANDO SINCRONIZAÇÃO BERKELEY...");
-                
-                ZMQ.Socket syncClient = context.socket(ZMQ.REQ);
-                syncClient.setReceiveTimeOut(3000);
-                
-                try {
-                    syncClient.connect("tcp://" + coordenador + ":5998");
-                    
-                    long t1 = System.currentTimeMillis();
-                    syncClient.send("REQ_HORA");
-                    String respostaHora = syncClient.recvStr();
-                    long t2 = System.currentTimeMillis();
-                    
-                    if (respostaHora != null && respostaHora.startsWith("REP_HORA|")) {
-                        long horaCoord = Long.parseLong(respostaHora.split("\\|")[1]);
-                        long rtt = t2 - t1;
-                        long horaAjustada = horaCoord + (rtt / 2);
-                        long diferenca = horaAjustada - System.currentTimeMillis();
-                        
 
-                        log("Hora do coordenador: " + formatarHora(horaCoord));
-                        log("RTT: " + rtt + "ms");
-                        log("Hora ajustada:     " + formatarHora(horaAjustada));
-                        log("Diferença: " + (diferenca >= 0 ? "+" : "") + diferenca + "ms");
-                        log("Relógio lógico: " + relogioLogico.getTime());
-                    }
-                    
+            if (mensagensDesdeSync % SYNC_INTERVAL == 0) {
+                log("INICIANDO SINCRONIZAÇÃO DE CANAIS COM REFERÊNCIA...");
+                try {
+                    syncChannelsWithReference(ref);
                 } catch (Exception e) {
-                    log("ERRO: Coordenador " + coordenador + " falhou!");
-                    log("Iniciando nova eleição...");
-                    
-                    int idx = ALL_SERVERS.indexOf(coordenador);
-                    if (idx >= 0 && idx + 1 < ALL_SERVERS.size()) {
-                        coordenador = ALL_SERVERS.get(idx + 1);
-                    } else {
-                        coordenador = ALL_SERVERS.get(0);
-                    }
-                    log("NOVO COORDENADOR: " + coordenador);
-                    pub.send(relogioLogico.increment() + "|servers " + coordenador);
+                    log("Falha de sincronização de canais: " + e.getMessage());
                 }
-                syncClient.close();
+
+                if (!souCoord) {
+                    log("INICIANDO SINCRONIZAÇÃO BERKELEY...");
+
+                    ZMQ.Socket syncClient = context.socket(ZMQ.REQ);
+                    syncClient.setReceiveTimeOut(3000);
+
+                    try {
+                        syncClient.connect("tcp://" + coordenador + ":5998");
+
+                        long t1 = System.currentTimeMillis();
+                        syncClient.send("REQ_HORA");
+                        String respostaHora = syncClient.recvStr();
+                        long t2 = System.currentTimeMillis();
+
+                        if (respostaHora != null && respostaHora.startsWith("REP_HORA|")) {
+                            long horaCoord = Long.parseLong(respostaHora.split("\\|")[1]);
+                            long rtt = t2 - t1;
+                            long horaAjustada = horaCoord + (rtt / 2);
+                            long diferenca = horaAjustada - System.currentTimeMillis();
+
+                            log("Hora do coordenador: " + formatarHora(horaCoord));
+                            log("RTT: " + rtt + "ms");
+                            log("Hora ajustada:     " + formatarHora(horaAjustada));
+                            log("Diferença: " + (diferenca >= 0 ? "+" : "") + diferenca + "ms");
+                            log("Relógio lógico: " + relogioLogico.getTime());
+                        }
+                    } catch (Exception e) {
+                        log("ERRO: Coordenador " + coordenador + " falhou! " + e.getMessage());
+                        log("Iniciando nova eleição...");
+
+                        int idx = ALL_SERVERS.indexOf(coordenador);
+                        if (idx >= 0 && idx + 1 < ALL_SERVERS.size()) {
+                            coordenador = ALL_SERVERS.get(idx + 1);
+                        } else {
+                            coordenador = ALL_SERVERS.get(0);
+                        }
+                        log("NOVO COORDENADOR: " + coordenador);
+                        pub.send(relogioLogico.increment() + "|servers " + coordenador);
+                    } finally {
+                        syncClient.close();
+                    }
+                }
             }
         }
     }

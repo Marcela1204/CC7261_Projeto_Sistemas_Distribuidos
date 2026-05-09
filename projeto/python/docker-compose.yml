@@ -16,7 +16,7 @@ services:
 
   reference:
     build: .
-    command: python ReferenceServer.py
+    command: python ReferenceServer_sync.py
     ports:
       - "6000:6000"
 
@@ -24,7 +24,7 @@ services:
     build: .
     hostname: servidor-1
     container_name: servidor-1
-    command: python Servidor.py
+    command: python Servidor_sync.py
     depends_on:
       - broker
       - proxy
@@ -34,7 +34,7 @@ services:
     build: .
     hostname: servidor-2
     container_name: servidor-2
-    command: python Servidor.py
+    command: python Servidor_sync.py
     depends_on:
       - broker
       - proxy

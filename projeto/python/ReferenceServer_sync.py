@@ -51,6 +51,7 @@ def channel_list_response():
 def main():
     global rank_counter
     load_channels()
+
     context = zmq.Context()
     rep = context.socket(zmq.REP)
     rep.bind("tcp://*:6000")
