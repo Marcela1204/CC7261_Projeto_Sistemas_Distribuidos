@@ -40,7 +40,13 @@ O projeto foi desenvolvido em cinco partes incrementais, cada uma adicionando no
 - **Heartbeat Simplificado**: Envio ao Reference Server sem hora; hora fornecida pelo coordenador.
 - **Publicação do Coordenador**: Novo coordenador publica no tópico `servers` para atualização de todos.
 
-### Parte 5: [A ser definido - documentação incompleta]
+### Parte 5: Consistência Eventual e Replicação de Canais
+- **Método Escolhido**: Consistência eventual com replicação centralizada via Reference Server.
+- **Justificativa**: Adequada para dados não críticos como lista de canais; permite operação independente e sincronização periódica, tolerando conflitos temporários.
+- **Funcionamento**: Servidores mantêm cópias locais de canais; sincronizam via merge no Reference Server (união de canais únicos). Atualização dinâmica ao criar canais, sincronização periódica a cada 15 mensagens.
+- **Persistência**: Lista global salva em `reference_channels.txt`; recuperação em falhas.
+- **Implementação**: Em Java, usa `TreeSet` para ordenação; em Python, `set` com ordenação ao salvar. Funções `mergeChannels()`/`merge_channels()` garantem unicidade.
+- **Benefícios**: Tolerância a falhas, escalabilidade, simplicidade (evita protocolos complexos como Paxos).
 
 ---
 
